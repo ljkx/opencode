@@ -33,6 +33,7 @@ import {
 } from "@opentui/core"
 import { Prompt, type PromptRef } from "../../component/prompt"
 import {
+  isSessionNotFoundError,
   mediaHashFromUri,
   type PromptAttachment,
   type SessionMessageInfo,
@@ -365,6 +366,9 @@ export function Session(props: {
         variant: "error",
         duration: 5000,
       })
+      // Only a missing session leaves the view; other failures, such as a flaky network right after a
+      // reconnect, keep the loaded session and the next reconnect syncs it again.
+      if (!isSessionNotFoundError(error)) return
       sessionTabs.enabled() ? sessionTabs.close(sessionID) : navigate({ type: "home" })
     })
   })

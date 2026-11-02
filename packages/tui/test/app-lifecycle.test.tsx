@@ -845,6 +845,67 @@ test("keeps assistant footer metrics current after prepend, same-length refresh,
   expect(reverted).not.toContain("50.0 tok/s")
 })
 
+test("a failed session read after reconnect leaves the session only when it is gone", async () => {
+  await using state = await tmpdir()
+  const session = {
+    id: "ses_reconnect",
+    title: "Reconnect fixture",
+    projectID: "project",
+    location: { directory },
+    agent: "build",
+    model: { providerID: "fixture", id: "model" },
+    cost: 0,
+    tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
+    time: { created: 100, updated: 1000 },
+  }
+  let read = "ok"
+  await using setup = await createAppFixture({
+    width: 100,
+    height: 30,
+    state: state.path,
+    config: { animations: false, tabs: { mode: "off" }, session: { sidebar: "hide" } },
+    args: { sessionID: session.id },
+    fetch: (url) => {
+      if (url.pathname === `/api/session/${session.id}`) {
+        if (read === "unavailable") return json({ message: "Network unavailable" }, { status: 503 })
+        if (read === "missing")
+          return json(
+            { _tag: "SessionNotFoundError", sessionID: session.id, message: "Session deleted" },
+            { status: 404 },
+          )
+        return json({ data: session })
+      }
+      if (url.pathname === `/api/session/${session.id}/message`)
+        return json({
+          data: [{ id: "msg_0001", type: "user", text: "Kept session input", time: { created: 200 } }],
+          cursor: {},
+        })
+      if (
+        url.pathname === `/api/session/${session.id}/inbox` ||
+        url.pathname === `/api/session/${session.id}/permission`
+      )
+        return json({ data: [] })
+      return undefined
+    },
+  })
+
+  await waitForHighlightedFrame(setup, (frame) => frame.includes("Kept session input"))
+
+  read = "unavailable"
+  setup.events.disconnect()
+  const unavailable = await waitForHighlightedFrame(setup, (frame) => frame.includes("UnexpectedStatus: 503"), {
+    maxPasses: 120,
+  })
+  expect(unavailable).toContain("Kept session input")
+
+  read = "missing"
+  setup.events.disconnect()
+  const missing = await waitForHighlightedFrame(setup, (frame) => frame.includes("Session deleted"), {
+    maxPasses: 120,
+  })
+  expect(missing).not.toContain("Kept session input")
+})
+
 test("session startup prompt is submitted exactly once", async () => {
   await using state = await tmpdir()
   const setup = await createTestRenderer({ width: 80, height: 24 })
