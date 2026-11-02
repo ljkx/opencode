@@ -3,7 +3,7 @@ import { Location } from "@opencode/schema/location"
 import { Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup, OpenApi } from "effect/http-api"
 import { ProviderNotFoundError, ServiceUnavailableError } from "../errors.js"
-import { LocationQuery, locationQueryOpenApi } from "./location.js"
+import { LocationQuery } from "./location.js"
 
 export const ProviderGroup = HttpApiGroup.make("server.provider")
   .add(
@@ -11,15 +11,13 @@ export const ProviderGroup = HttpApiGroup.make("server.provider")
       query: LocationQuery,
       success: Location.response(Schema.Array(Provider.Info)),
       error: ServiceUnavailableError,
-    })
-      .annotateMerge(locationQueryOpenApi)
-      .annotateMerge(
-        OpenApi.annotations({
-          identifier: "provider.list",
-          summary: "List providers",
-          description: "Retrieve active AI providers so clients can show provider availability and configuration.",
-        }),
-      ),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "provider.list",
+        summary: "List providers",
+        description: "Retrieve active AI providers so clients can show provider availability and configuration.",
+      }),
+    ),
   )
   .add(
     HttpApiEndpoint.get("provider.get", "/api/provider/:providerID", {
@@ -27,15 +25,13 @@ export const ProviderGroup = HttpApiGroup.make("server.provider")
       query: LocationQuery,
       success: Location.response(Provider.Info),
       error: [ProviderNotFoundError, ServiceUnavailableError],
-    })
-      .annotateMerge(locationQueryOpenApi)
-      .annotateMerge(
-        OpenApi.annotations({
-          identifier: "provider.get",
-          summary: "Get provider",
-          description: "Retrieve a single AI provider so clients can inspect its availability and endpoint settings.",
-        }),
-      ),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "provider.get",
+        summary: "Get provider",
+        description: "Retrieve a single AI provider so clients can inspect its availability and endpoint settings.",
+      }),
+    ),
   )
   .annotateMerge(
     OpenApi.annotations({

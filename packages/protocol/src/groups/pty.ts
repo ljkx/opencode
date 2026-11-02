@@ -4,7 +4,7 @@ import { Location } from "@opencode/schema/location"
 import { Context, Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup, HttpApiMiddleware, HttpApiSchema, OpenApi } from "effect/http-api"
 import { ForbiddenError, LocationNotFoundError, PtyNotFoundError } from "../errors.js"
-import { LocationQuery, locationQueryOpenApi } from "./location.js"
+import { LocationQuery } from "./location.js"
 
 export const PTY_CONNECT_TICKET_QUERY = "ticket"
 export const PTY_CONNECT_TOKEN_HEADER = "x-opencode-ticket"
@@ -25,30 +25,26 @@ export const makePtyGroup = <LocationId extends HttpApiMiddleware.AnyId, Locatio
       HttpApiEndpoint.get("pty.list", "/api/pty", {
         query: LocationQuery,
         success: Location.response(Schema.Array(Pty.Info)),
-      })
-        .annotateMerge(locationQueryOpenApi)
-        .annotateMerge(
-          OpenApi.annotations({
-            identifier: "pty.list",
-            summary: "List PTY sessions",
-            description: "List PTY sessions for a location, including exited sessions retained until removal.",
-          }),
-        ),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "pty.list",
+          summary: "List PTY sessions",
+          description: "List PTY sessions for a location, including exited sessions retained until removal.",
+        }),
+      ),
     )
     .add(
       HttpApiEndpoint.post("pty.create", "/api/pty", {
         query: LocationQuery,
         payload: Pty.CreateInput,
         success: Location.response(Pty.Info),
-      })
-        .annotateMerge(locationQueryOpenApi)
-        .annotateMerge(
-          OpenApi.annotations({
-            identifier: "pty.create",
-            summary: "Create PTY session",
-            description: "Create a pseudo-terminal session for a location.",
-          }),
-        ),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "pty.create",
+          summary: "Create PTY session",
+          description: "Create a pseudo-terminal session for a location.",
+        }),
+      ),
     )
     .add(
       HttpApiEndpoint.get("pty.get", "/api/pty/:ptyID", {
@@ -56,15 +52,13 @@ export const makePtyGroup = <LocationId extends HttpApiMiddleware.AnyId, Locatio
         query: LocationQuery,
         success: Location.response(Pty.Info),
         error: PtyNotFoundError,
-      })
-        .annotateMerge(locationQueryOpenApi)
-        .annotateMerge(
-          OpenApi.annotations({
-            identifier: "pty.get",
-            summary: "Get PTY session",
-            description: "Get one PTY session, including its exit code once exited.",
-          }),
-        ),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "pty.get",
+          summary: "Get PTY session",
+          description: "Get one PTY session, including its exit code once exited.",
+        }),
+      ),
     )
     .add(
       HttpApiEndpoint.put("pty.update", "/api/pty/:ptyID", {
@@ -73,15 +67,13 @@ export const makePtyGroup = <LocationId extends HttpApiMiddleware.AnyId, Locatio
         payload: Pty.UpdateInput,
         success: Location.response(Pty.Info),
         error: PtyNotFoundError,
-      })
-        .annotateMerge(locationQueryOpenApi)
-        .annotateMerge(
-          OpenApi.annotations({
-            identifier: "pty.update",
-            summary: "Update PTY session",
-            description: "Update the title or viewport size of one PTY session.",
-          }),
-        ),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "pty.update",
+          summary: "Update PTY session",
+          description: "Update the title or viewport size of one PTY session.",
+        }),
+      ),
     )
     .add(
       HttpApiEndpoint.delete("pty.remove", "/api/pty/:ptyID", {
@@ -89,15 +81,13 @@ export const makePtyGroup = <LocationId extends HttpApiMiddleware.AnyId, Locatio
         query: LocationQuery,
         success: HttpApiSchema.NoContent,
         error: PtyNotFoundError,
-      })
-        .annotateMerge(locationQueryOpenApi)
-        .annotateMerge(
-          OpenApi.annotations({
-            identifier: "pty.remove",
-            summary: "Remove PTY session",
-            description: "Terminate and remove one PTY session.",
-          }),
-        ),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "pty.remove",
+          summary: "Remove PTY session",
+          description: "Terminate and remove one PTY session.",
+        }),
+      ),
     )
     .add(
       HttpApiEndpoint.post("pty.connectToken", "/api/pty/:ptyID/connect-token", {
@@ -106,15 +96,13 @@ export const makePtyGroup = <LocationId extends HttpApiMiddleware.AnyId, Locatio
         headers: Schema.Struct({ [PTY_CONNECT_TOKEN_HEADER]: Schema.optional(Schema.String) }),
         success: Location.response(PtyTicket.ConnectToken),
         error: [ForbiddenError, PtyNotFoundError],
-      })
-        .annotateMerge(locationQueryOpenApi)
-        .annotateMerge(
-          OpenApi.annotations({
-            identifier: "pty.connect.token",
-            summary: "Create PTY WebSocket token",
-            description: "Create a short-lived single-use ticket for opening a PTY WebSocket connection.",
-          }),
-        ),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "pty.connect.token",
+          summary: "Create PTY WebSocket token",
+          description: "Create a short-lived single-use ticket for opening a PTY WebSocket connection.",
+        }),
+      ),
     )
     .middleware(locationMiddleware)
     .add(

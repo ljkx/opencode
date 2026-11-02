@@ -2,23 +2,21 @@ import { Config } from "@opencode/schema/config"
 import { ConfigShell } from "@opencode/schema/config/shell"
 import { Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/http-api"
-import { LocationQuery, locationQueryOpenApi } from "./location.js"
+import { LocationQuery } from "./location.js"
 
 export const ConfigGroup = HttpApiGroup.make("server.config")
   .add(
     HttpApiEndpoint.get("config.get", "/api/config", {
       query: LocationQuery,
       success: Schema.Array(Config.Entry),
-    })
-      .annotateMerge(locationQueryOpenApi)
-      .annotateMerge(
-        OpenApi.annotations({
-          identifier: "config.get",
-          summary: "Get configuration",
-          description:
-            "Return configuration documents and discovery sources for the requested location, from lowest to highest priority.",
-        }),
-      ),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "config.get",
+        summary: "Get configuration",
+        description:
+          "Return configuration documents and discovery sources for the requested location, from lowest to highest priority.",
+      }),
+    ),
   )
   .add(
     HttpApiEndpoint.get("config.shells", "/api/config/shell", {

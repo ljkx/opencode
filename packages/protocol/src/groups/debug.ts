@@ -2,7 +2,7 @@ import { Location } from "@opencode/schema/location"
 import { Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/http-api"
 import { InvalidRequestError, UnknownError } from "../errors.js"
-import { LocationQuery, locationQueryOpenApi } from "./location.js"
+import { LocationQuery } from "./location.js"
 
 export const DebugGroup = HttpApiGroup.make("server.debug")
   .add(
@@ -55,14 +55,12 @@ export const DebugGroup = HttpApiGroup.make("server.debug")
     HttpApiEndpoint.delete("debug.location.evict", "/api/debug/location", {
       query: LocationQuery,
       success: HttpApiSchema.NoContent,
-    })
-      .annotateMerge(locationQueryOpenApi)
-      .annotateMerge(
-        OpenApi.annotations({
-          identifier: "debug.location.evict",
-          summary: "Evict a loaded location",
-          description: "Dispose the requested location's cached services so its next use boots them fresh.",
-        }),
-      ),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "debug.location.evict",
+        summary: "Evict a loaded location",
+        description: "Dispose the requested location's cached services so its next use boots them fresh.",
+      }),
+    ),
   )
   .annotateMerge(OpenApi.annotations({ title: "debug" }))

@@ -13,7 +13,7 @@ import {
   PermissionSavedNotFoundError,
   SessionNotFoundError,
 } from "../errors.js"
-import { LocationQuery, locationQueryOpenApi } from "./location.js"
+import { LocationQuery } from "./location.js"
 
 export const makePermissionGroup = <
   LocationId extends HttpApiMiddleware.AnyId,
@@ -31,7 +31,6 @@ export const makePermissionGroup = <
         success: Location.response(Schema.Array(Permission.Request)),
       })
         .middleware(locationMiddleware)
-        .annotateMerge(locationQueryOpenApi)
         .annotateMerge(
           OpenApi.annotations({
             identifier: "permission.request.list",

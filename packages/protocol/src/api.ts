@@ -24,7 +24,7 @@ import { makePtyGroup } from "./groups/pty.js"
 import { ShellGroup } from "./groups/shell.js"
 import { ReferenceGroup } from "./groups/reference.js"
 import { Authorization } from "./middleware/authorization.js"
-import { makeLocationGroup } from "./groups/location.js"
+import { locationQueryOpenApi, makeLocationGroup } from "./groups/location.js"
 import { IntegrationGroup } from "./groups/integration.js"
 import { WebSearchGroup } from "./groups/websearch.js"
 import { UsageGroup } from "./groups/usage.js"
@@ -204,6 +204,7 @@ const makeApiFromGroup = <
         description: "Experimental HttpApi surface for selected instance routes.",
       }),
     )
+    .annotateMerge(locationQueryOpenApi)
     .middleware(Authorization)
     .middleware(SchemaErrorMiddleware)
 

@@ -3,7 +3,7 @@ import { WebSearch } from "@opencode/schema/websearch"
 import { Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup, OpenApi } from "effect/http-api"
 import { InvalidRequestError, ServiceUnavailableError } from "../errors.js"
-import { LocationQuery, locationQueryOpenApi } from "./location.js"
+import { LocationQuery } from "./location.js"
 
 export const WebSearchGroup = HttpApiGroup.make("server.websearch")
   .add(
@@ -11,15 +11,13 @@ export const WebSearchGroup = HttpApiGroup.make("server.websearch")
       query: LocationQuery,
       success: Location.response(Schema.Array(WebSearch.Provider)),
       error: ServiceUnavailableError,
-    })
-      .annotateMerge(locationQueryOpenApi)
-      .annotateMerge(
-        OpenApi.annotations({
-          identifier: "websearch.providers",
-          summary: "List web search providers",
-          description: "Return the registered web search providers.",
-        }),
-      ),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "websearch.providers",
+        summary: "List web search providers",
+        description: "Return the registered web search providers.",
+      }),
+    ),
   )
   .add(
     HttpApiEndpoint.post("websearch.query", "/api/websearch", {
@@ -27,16 +25,14 @@ export const WebSearchGroup = HttpApiGroup.make("server.websearch")
       payload: Schema.Struct(WebSearch.Input.fields),
       success: Location.response(WebSearch.Response),
       error: [InvalidRequestError, ServiceUnavailableError],
-    })
-      .annotateMerge(locationQueryOpenApi)
-      .annotateMerge(
-        OpenApi.annotations({
-          identifier: "websearch.query",
-          summary: "Search the web",
-          description:
-            "Run one web search through the selected provider. Specify a provider to override the configured default.",
-        }),
-      ),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "websearch.query",
+        summary: "Search the web",
+        description:
+          "Run one web search through the selected provider. Specify a provider to override the configured default.",
+      }),
+    ),
   )
   .annotateMerge(
     OpenApi.annotations({

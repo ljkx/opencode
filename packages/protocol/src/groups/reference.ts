@@ -2,7 +2,7 @@ import { Location } from "@opencode/schema/location"
 import { Reference } from "@opencode/schema/reference"
 import { Schema, Struct } from "effect"
 import { HttpApiEndpoint, HttpApiGroup, OpenApi } from "effect/http-api"
-import { LocationQuery, locationQueryOpenApi } from "./location.js"
+import { LocationQuery } from "./location.js"
 
 const PublicLocalSource = Schema.Struct(Struct.omit(Reference.LocalSource.fields, ["description", "hidden"])).annotate({
   identifier: "Reference.LocalSource",
@@ -24,15 +24,13 @@ export const ReferenceGroup = HttpApiGroup.make("server.reference")
     HttpApiEndpoint.get("reference.list", "/api/reference", {
       query: LocationQuery,
       success: Location.response(Schema.Array(PublicInfo)),
-    })
-      .annotateMerge(locationQueryOpenApi)
-      .annotateMerge(
-        OpenApi.annotations({
-          identifier: "reference.list",
-          summary: "List references",
-          description: "List references available in the requested location.",
-        }),
-      ),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "reference.list",
+        summary: "List references",
+        description: "List references available in the requested location.",
+      }),
+    ),
   )
   .annotateMerge(
     OpenApi.annotations({

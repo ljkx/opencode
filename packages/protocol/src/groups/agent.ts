@@ -2,7 +2,7 @@ import { Agent } from "@opencode/schema/agent"
 import { Location } from "@opencode/schema/location"
 import { Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup, OpenApi } from "effect/http-api"
-import { LocationQuery, locationQueryOpenApi } from "./location.js"
+import { LocationQuery } from "./location.js"
 import { AgentNotFoundError, ServiceUnavailableError } from "../errors.js"
 
 export const AgentGroup = HttpApiGroup.make("server.agent")
@@ -11,15 +11,13 @@ export const AgentGroup = HttpApiGroup.make("server.agent")
       query: LocationQuery,
       success: Location.response(Schema.Array(Agent.Info)),
       error: ServiceUnavailableError,
-    })
-      .annotateMerge(locationQueryOpenApi)
-      .annotateMerge(
-        OpenApi.annotations({
-          identifier: "agent.list",
-          summary: "List agents",
-          description: "Retrieve currently registered agents.",
-        }),
-      ),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "agent.list",
+        summary: "List agents",
+        description: "Retrieve currently registered agents.",
+      }),
+    ),
   )
   .add(
     HttpApiEndpoint.get("agent.get", "/api/agent/:agentID", {
@@ -27,14 +25,12 @@ export const AgentGroup = HttpApiGroup.make("server.agent")
       query: LocationQuery,
       success: Location.response(Agent.Info),
       error: AgentNotFoundError,
-    })
-      .annotateMerge(locationQueryOpenApi)
-      .annotateMerge(
-        OpenApi.annotations({
-          identifier: "agent.get",
-          summary: "Get agent",
-          description: "Retrieve a single currently registered agent.",
-        }),
-      ),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "agent.get",
+        summary: "Get agent",
+        description: "Retrieve a single currently registered agent.",
+      }),
+    ),
   )
   .annotateMerge(OpenApi.annotations({ title: "agent" }))
