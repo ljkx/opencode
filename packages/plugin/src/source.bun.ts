@@ -8,6 +8,11 @@ import { localSource } from "./source.js"
 import { missingPackageTarget } from "./source.package.js"
 
 let generation = Date.now()
+// Bun has one module registry per process. An import that starts while another
+// generation of the same files is still loading inherits that generation's link
+// failure, even after its cache keys are deleted, so every source in the process
+// invalidates and imports in turn.
+let loading: Promise<unknown> = Promise.resolve()
 
 export async function prepareSource(entrypoint: string, track: (file: string, directory?: boolean) => void) {
   const root = fileURLToPath(entrypoint)
@@ -66,6 +71,15 @@ export async function prepareSource(entrypoint: string, track: (file: string, di
       }
     }
   }
-  visit(root)
-  return { version: String(++generation), load: () => Host.load(entrypoint) }
+  return {
+    version: String(++generation),
+    load: () => {
+      const loaded = loading.then(() => {
+        visit(root)
+        return Host.load(entrypoint)
+      })
+      loading = loaded.catch(() => {})
+      return loaded
+    },
+  }
 }

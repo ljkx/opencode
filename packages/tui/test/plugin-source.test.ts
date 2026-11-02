@@ -91,6 +91,39 @@ test("renamed exports, failed loads, and new dependencies recover without cached
   expect((await sources.read(entry.href)).module).toMatchObject({ default: 3 })
 })
 
+test("a reload during a half-written build's pending import loads the finished build", async () => {
+  await using sources = await fixture()
+  const entry = new URL("tui.ts", sources.url)
+  await Bun.write(new URL("held.ts", sources.url), "export {}")
+  // The build has written the renamed helper but not yet the entry that imports it.
+  await Bun.write(new URL("helper.ts", sources.url), "export const renamed = 1")
+  await Bun.write(entry, 'import "./held"\nimport { value } from "./helper"\nexport default value')
+  const reached = Promise.withResolvers<void>()
+  const open = Promise.withResolvers<void>()
+  // Holds the first generation's import while it is still loading its graph.
+  Bun.plugin({
+    name: "held-plugin-source",
+    setup(build) {
+      build.onLoad({ filter: new RegExp(`^${RegExp.escape(fileURLToPath(sources.url))}held\\.ts$`) }, async () => {
+        reached.resolve()
+        await open.promise
+        return { contents: "export {}", loader: "ts" }
+      })
+    },
+  })
+  const pending = sources.read(entry.href)
+  await reached.promise
+  await Bun.write(entry, 'import "./held"\nimport { renamed } from "./helper"\nexport default renamed')
+  // Another location reloads the finished build while the first import is still pending.
+  const other = createPluginSources(async () => {})
+  const reloaded = other.read(entry.href)
+  open.resolve()
+  await expect(pending).rejects.toThrow("value")
+  expect((await reloaded).module).toMatchObject({ default: 1 })
+  expect((await other.read(entry.href)).module).toMatchObject({ default: 1 })
+  other.dispose()
+})
+
 test("a missing package dependency reloads when it is installed", async () => {
   let changes = 0
   const watcher = createSourceWatcher(() => {
